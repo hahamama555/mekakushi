@@ -1,25 +1,36 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,
-      initial-scale=1.0,
-      maximum-scale=1.0,
-      user-scalable=no">
 
-<title>数字入り目隠しツール</title>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no">
+
+<title>自由入力 数字入り目隠しツール</title>
+
 
 <style>
+
+/* =========================
+   基本
+========================= */
 
 * {
   box-sizing: border-box;
 }
 
 body {
+
   margin: 0;
+
   background: #111;
-  color: #fff;
+
+  color: white;
+
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -36,7 +47,9 @@ body {
 .toolbar {
 
   position: sticky;
+
   top: 0;
+
   z-index: 20;
 
   background: #222;
@@ -44,9 +57,11 @@ body {
   padding: 8px;
 
   display: flex;
+
   gap: 8px;
 
   align-items: center;
+
   justify-content: center;
 
   flex-wrap: wrap;
@@ -66,11 +81,11 @@ button,
 
   padding: 9px 12px;
 
-  background: #fff;
+  background: white;
 
   color: #111;
 
-  font-weight: 700;
+  font-weight: bold;
 
   font-size: 14px;
 
@@ -79,12 +94,46 @@ button,
 
 
 .fileBtn input {
+
   display: none;
+
 }
 
 
 /* =========================
-   サイズ設定
+   数字入力
+========================= */
+
+.number-control {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  font-size: 13px;
+}
+
+
+#numberInput {
+
+  width: 75px;
+
+  padding: 8px;
+
+  border: none;
+
+  border-radius: 7px;
+
+  font-size: 16px;
+
+  text-align: center;
+}
+
+
+/* =========================
+   サイズ
 ========================= */
 
 .control {
@@ -100,7 +149,8 @@ button,
 
 
 .control input[type="range"] {
-  width: 100px;
+
+  width: 90px;
 }
 
 
@@ -115,7 +165,7 @@ button,
 
 
 /* =========================
-   色選択
+   色
 ========================= */
 
 .color-control {
@@ -124,24 +174,21 @@ button,
 
   align-items: center;
 
-  gap: 6px;
+  gap: 5px;
 
   font-size: 13px;
 }
 
 
-.color-control select {
+#maskColor {
 
   border: none;
 
   border-radius: 7px;
 
-  padding: 6px 8px;
-
-  font-size: 13px;
+  padding: 6px;
 
   font-weight: bold;
-
 }
 
 
@@ -187,7 +234,7 @@ button,
 
   background: #b7e4c7;
 
-  border: 3px solid #ffffff;
+  border: 3px solid white;
 
   border-radius: 8px;
 
@@ -213,7 +260,9 @@ button,
 
 
 .mask span {
+
   pointer-events: none;
+
 }
 
 
@@ -229,12 +278,21 @@ button,
     padding: 8px 10px;
 
     font-size: 13px;
+
   }
 
   .control,
-  .color-control {
+  .color-control,
+  .number-control {
 
     font-size: 12px;
+
+  }
+
+  #numberInput {
+
+    width: 65px;
+
   }
 
 }
@@ -267,6 +325,23 @@ button,
     >
 
   </label>
+
+
+
+  <!-- 数字入力 -->
+
+  <div class="number-control">
+
+    🔢 番号
+
+    <input
+      id="numberInput"
+      type="text"
+      inputmode="numeric"
+      placeholder="例：7"
+    >
+
+  </div>
 
 
 
@@ -415,29 +490,42 @@ button,
 const board =
   document.getElementById("board");
 
+
 const base =
   document.getElementById("base");
+
 
 const imageFile =
   document.getElementById("imageFile");
 
+
+const numberInput =
+  document.getElementById("numberInput");
+
+
 const maskWidth =
   document.getElementById("maskWidth");
+
 
 const maskHeight =
   document.getElementById("maskHeight");
 
+
 const widthValue =
   document.getElementById("widthValue");
+
 
 const heightValue =
   document.getElementById("heightValue");
 
+
 const maskColor =
   document.getElementById("maskColor");
 
+
 const undo =
   document.getElementById("undo");
+
 
 const clear =
   document.getElementById("clear");
@@ -448,12 +536,6 @@ const clear =
 ========================= */
 
 let masks = [];
-
-
-/* 次の番号 */
-
-let nextNumber = 1;
-
 
 
 /* =========================
@@ -479,7 +561,6 @@ function getFontSize(
 }
 
 
-
 /* =========================
    サイズ変更
 ========================= */
@@ -496,11 +577,12 @@ function updateMaskSize() {
   widthValue.textContent =
     width + "px";
 
+
   heightValue.textContent =
     height + "px";
 
 
-  /* すでにある目隠し */
+  /* すでに置いた目隠しも変更 */
 
   masks.forEach(
     function(item) {
@@ -535,7 +617,6 @@ maskHeight.addEventListener(
 );
 
 
-
 /* =========================
    色変更
 ========================= */
@@ -547,8 +628,6 @@ maskColor.addEventListener(
     const color =
       maskColor.value;
 
-
-    /* 配置済みも全部変更 */
 
     masks.forEach(
       function(item) {
@@ -563,9 +642,8 @@ maskColor.addEventListener(
 );
 
 
-
 /* =========================
-   目隠しを追加
+   目隠し追加
 ========================= */
 
 function addMask(
@@ -580,6 +658,7 @@ function addMask(
   const x =
     clientX - rect.left;
 
+
   const y =
     clientY - rect.top;
 
@@ -587,14 +666,18 @@ function addMask(
   const width =
     Number(maskWidth.value);
 
+
   const height =
     Number(maskHeight.value);
+
 
   const color =
     maskColor.value;
 
 
-  /* 目隠し本体 */
+  /* =========================
+     目隠し本体
+  ========================= */
 
   const el =
     document.createElement("div");
@@ -607,12 +690,14 @@ function addMask(
   el.style.left =
     x + "px";
 
+
   el.style.top =
     y + "px";
 
 
   el.style.width =
     width + "px";
+
 
   el.style.height =
     height + "px";
@@ -629,18 +714,22 @@ function addMask(
     ) + "px";
 
 
-  /* 数字 */
+  /* =========================
+     入力した数字
+  ========================= */
 
-  const number =
+  const span =
     document.createElement("span");
 
 
-  number.textContent =
-    nextNumber;
+  span.textContent =
+    numberInput.value;
 
 
-  el.appendChild(number);
+  el.appendChild(span);
 
+
+  /* 画像に配置 */
 
   board.appendChild(el);
 
@@ -661,12 +750,9 @@ function addMask(
   masks.push(item);
 
 
-  nextNumber++;
-
-
-
   /* =========================
-     タップで消去
+     目隠しをタップ
+     → その目隠しだけ消す
   ========================= */
 
   el.addEventListener(
@@ -698,7 +784,6 @@ function addMask(
 }
 
 
-
 /* =========================
    画像をタップ
 ========================= */
@@ -723,7 +808,6 @@ board.addEventListener(
 );
 
 
-
 /* =========================
    1つ戻す
 ========================= */
@@ -746,7 +830,6 @@ undo.addEventListener(
 );
 
 
-
 /* =========================
    全部消す
 ========================= */
@@ -766,12 +849,8 @@ clear.addEventListener(
 
     masks = [];
 
-
-    nextNumber = 1;
-
   }
 );
-
 
 
 /* =========================
@@ -803,11 +882,12 @@ imageFile.addEventListener(
       };
 
 
-    base.src = url;
+    base.src =
+      url;
 
 
     /* 画像変更時は
-       目隠しをリセット */
+       目隠しを全部消す */
 
     masks.forEach(
       function(item) {
@@ -820,8 +900,23 @@ imageFile.addEventListener(
 
     masks = [];
 
+  }
+);
 
-    nextNumber = 1;
+
+/* =========================
+   Enterキーでも入力確定
+========================= */
+
+numberInput.addEventListener(
+  "keydown",
+  function(e) {
+
+    if (e.key === "Enter") {
+
+      numberInput.blur();
+
+    }
 
   }
 );
